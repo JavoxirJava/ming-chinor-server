@@ -46,7 +46,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
-          target: "/home/${{ secrets.SERVER_USER }}/ming-chinor"
+          target: "/root/ming-chinor"
 
       - name: 🔁 Serverda PM2 restart
         uses: appleboy/ssh-action@v0.1.10
@@ -55,7 +55,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/ming-chinor
+            cd /root/ming-chinor
             npm install
             pm2 delete ming-chinor || true
             pm2 start npm --name ming-chinor -- run start
