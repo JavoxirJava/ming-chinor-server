@@ -38,17 +38,11 @@ jobs:
       - name: 📦 Paketlarni o‘rnatish (CI)
         run: npm ci --omit=dev
 
-      # - name: 🏗 Build (kerak bo‘lsa yoqing)
+      # Kerak bo'lsa buildni yoqing
+      # - name: 🏗 Build
       #   run: npm run build
 
-      - name: 🔎 Debug (ixtiyoriy, nimalar borligini ko‘rish)
-        run: |
-          pwd
-          ls -la
-          echo "---- dirs ----"
-          find . -maxdepth 2 -type d -print
-
-      - name: 📦 Pack release (tar.gz) - /tmp ga yozamiz
+      - name: 📦 Pack release (tar.gz) - tempda yaratamiz
         run: |
           TAR_PATH="${RUNNER_TEMP}/release.tar.gz"
           tar \
@@ -59,6 +53,11 @@ jobs:
             --exclude='./release.tar.gz' \
             -czf "${TAR_PATH}" .
           ls -lh "${TAR_PATH}"
+
+      - name: 📁 Tarballni workspace’ga ko‘chirish (SCP shu yerdan oladi)
+        run: |
+          cp "${RUNNER_TEMP}/release.tar.gz" ./release.tar.gz
+          ls -lh ./release.tar.gz
 
       - name: 📁 Serverda target papkani yaratish
         if: github.ref == 'refs/heads/master'
@@ -79,9 +78,9 @@ jobs:
           username: ${{ secrets.SERVER_USER }}   # root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || '22' }}
-          # Absolyut yo'ldagi faylni yuboramiz:
-          source: "${{ runner.temp }}/release.tar.gz"
+          source: "release.tar.gz"          # <-- workspace ichidagi fayl
           target: "/root/ming-chinor"
+          overwrite: true                   # eski release.tar.gz ustidan yozish
 
       - name: 🔁 Serverda extract + PM2 restart
         uses: appleboy/ssh-action@v0.1.10
@@ -94,20 +93,14 @@ jobs:
             set -e
             cd /root/ming-chinor
 
-            # Tarballni yozib chiqaramiz
             tar xzf release.tar.gz
             rm -f release.tar.gz
 
-            # PM2 bor-yo'qligini tekshirish
             command -v pm2 >/dev/null 2>&1 || npm i -g pm2
-
-            # Prod dependency
             npm ci --omit=dev
 
-            # .env serverda bo‘lishi kerak
             if [ ! -f .env ]; then echo "⚠️ .env topilmadi (serverda bo‘lishi kerak)"; fi
 
-            # PM2 restart
             pm2 delete ming-chinor || true
             pm2 start npm --name ming-chinor -- run start
             pm2 save
