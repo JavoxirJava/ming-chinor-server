@@ -17,7 +17,6 @@ jobs:
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
             -d text="${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
             -d parse_mode=Markdown
-
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendSticker \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
             -d sticker="CAACAgQAAxkBAAMKZ_5Fikm9U1dAOff5x1z2RZIPd5UAAkoTAAIYdwlTeIN6-a2BPik2BA"
@@ -39,18 +38,27 @@ jobs:
       - name: 📦 Paketlarni o‘rnatish (CI)
         run: npm ci --omit=dev
 
-      # (Agar sizda build bosqichi kerak bo‘lsa, oching)
-      # - name: 🏗 Build
+      # - name: 🏗 Build (kerak bo‘lsa yoqing)
       #   run: npm run build
 
-      - name: 📦 Pack release (tar.gz)
+      - name: 🔎 Debug (ixtiyoriy, nimalar borligini ko‘rish)
         run: |
+          pwd
+          ls -la
+          echo "---- dirs ----"
+          find . -maxdepth 2 -type d -print
+
+      - name: 📦 Pack release (tar.gz) - /tmp ga yozamiz
+        run: |
+          TAR_PATH="${RUNNER_TEMP}/release.tar.gz"
           tar \
             --exclude='./node_modules' \
             --exclude='./.git' \
             --exclude='./.github' \
-            --exclude='*.log' \
-            -czf release.tar.gz .
+            --exclude='./*.log' \
+            --exclude='./release.tar.gz' \
+            -czf "${TAR_PATH}" .
+          ls -lh "${TAR_PATH}"
 
       - name: 📁 Serverda target papkani yaratish
         if: github.ref == 'refs/heads/master'
@@ -71,7 +79,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}   # root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || '22' }}
-          source: "release.tar.gz"
+          # Absolyut yo'ldagi faylni yuboramiz:
+          source: "${{ runner.temp }}/release.tar.gz"
           target: "/root/ming-chinor"
 
       - name: 🔁 Serverda extract + PM2 restart
@@ -110,7 +119,6 @@ jobs:
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
             -d text="✅ *Node.js deploy MUVAFFAQIYATLI tugadi!* 🚀%0A%0A📝 *Commit:* _${{ github.event.head_commit.message }}_" \
             -d parse_mode=Markdown
-
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendAnimation \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
             -d animation="CAACAgIAAxkBAANJaBB77sVqHSUQUHiN1aueq7uhvJoAAjsPAAKzG_hJvpDMSwABF75jNgQ" \
@@ -124,7 +132,6 @@ jobs:
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
             -d text="❌ *Node.js deploy MUVAFFAQIYATSIZ tugadi!* 🚀%0A%0A📝 *Commit:* _${{ github.event.head_commit.message }}_" \
             -d parse_mode=Markdown
-
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendSticker \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
             -d sticker="CAACAgQAAxkBAAMGZ_4K_bLdPd7eaMUGv4OeC_kqDn4AAuYTAAKAq8BTiVm6hOs4-pk2BA"
