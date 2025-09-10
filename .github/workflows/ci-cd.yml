@@ -4,7 +4,7 @@ name: Node.js CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build-deploy:
@@ -46,7 +46,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
-          target: "/home/${{ secrets.SERVER_USER }}/mini-app"
+          target: "/home/${{ secrets.SERVER_USER }}/ming-chinor"
 
       - name: 🔁 Serverda PM2 restart
         uses: appleboy/ssh-action@v0.1.10
@@ -55,10 +55,10 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/mini-app
+            cd /home/${{ secrets.SERVER_USER }}/ming-chinor
             npm install
-            pm2 delete mini-app || true
-            pm2 start npm --name mini-app -- run start
+            pm2 delete ming-chinor || true
+            pm2 start npm --name ming-chinor -- run start
             pm2 save
 
       - name: Telegram Notify (Success)
