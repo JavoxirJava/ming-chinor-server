@@ -4,7 +4,7 @@ const User = require('../models/User');
 require('dotenv').config();
 
 const userBot = new Telegraf(process.env.BOT_TOKEN);
-const BASE_URL = "https://ming-chinor.netlify.com/";
+const BASE_URL = "https://ming-chinor.netlify.app/";
 
 const tempUsers = new Map();
 
