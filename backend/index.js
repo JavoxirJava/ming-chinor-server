@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const { userBot } = require('./bot/bot');
 // const cors = require('cors'); // hozircha O'CHIQ
 // const { userBot } = require('./bot/bot'); // hozircha O'CHIQ
 
@@ -48,7 +49,7 @@ app.use('/api/v1/user',      require('./routes/userRoutes'));
 app.use('/api/v1/admin',     require('./routes/adminRoutes'));
 
 // 7) Botni keyin yoqasiz (hozircha izohda)
-// userBot.launch().then(() => console.log('Telegram bot ishga tushdi ✅'));
+userBot.launch().then(() => console.log('Telegram bot ishga tushdi ✅'));
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`✅ Server ${PORT}-portda`));
