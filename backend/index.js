@@ -11,7 +11,35 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 // app.use(cors());
 
-app.use(cors());
+const whitelist = [
+    'https://ming-chinor-admin.netlify.app/',
+    'https://ming-chinor.netlify.app/',
+    'http://localhost:3000',
+];
+
+app.use((req, res, next) => {
+    // credentials bilan kelsa kechiktirmaslik uchun
+    if (req.method === 'OPTIONS') return res.sendStatus(204);
+    next();
+});
+
+app.use(cors({
+    origin(origin, cb) {
+        if (!origin) return cb(null, true);                 // Postman/curl uchun
+        cb(null, whitelist.includes(origin));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With', 'Accept'],
+    maxAge: 86400,
+}));
+
+app.use((req, res, next) => {
+    res.header('Vary', 'Origin'); // CDN/proxy uchun to‘g‘ri kechlash
+    next();
+});
+
+app.options('*', cors());
 
 // MongoDB ulash
 mongoose.connect(process.env.MONGO_URL)
