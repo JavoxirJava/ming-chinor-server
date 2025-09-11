@@ -42,20 +42,33 @@ exports.addToBasket = async (req, res) => {
 
 exports.getUserBasket = async (req, res) => {
     try {
-        const baskets = await Basket.find({ user_id: req.params.userId, is_ordered: false })
+        const { userId } = req.params;
+
+        // ❗ Guard
+        if (!userId || userId === 'null' || userId === 'undefined') {
+            return res.status(400).json({
+                error: 'Invalid userId',
+                detail: 'userId majburiy va null bo‘lishi mumkin emas'
+            });
+        }
+
+        const baskets = await Basket.find({ user_id: userId, is_ordered: false })
             .populate('product_id');
+
+        if (!baskets.length) 
+            return res.json({ products: [], totalPrice: 0 });
 
         const basketWithDetails = baskets.map(item => {
             const product = item.product_id;
-            const singlePrice = product.price;
+            const singlePrice = product?.price || 0;
             const totalPrice = singlePrice * item.count;
 
             return {
                 _id: item._id,
                 product: {
-                    _id: product._id, // ✅ Shu yer muhim!
-                    name: product.name,
-                    image: product.image,
+                    _id: product?._id,
+                    name: product?.name,
+                    image: product?.image,
                     price: singlePrice,
                 },
                 count: item.count,
@@ -63,15 +76,18 @@ exports.getUserBasket = async (req, res) => {
             };
         });
 
-        const totalBasketPrice = basketWithDetails.reduce((acc, item) => acc + item.total_price, 0);
+        const totalBasketPrice = basketWithDetails.reduce(
+            (acc, item) => acc + item.total_price,
+            0
+        );
 
         res.json({
             products: basketWithDetails,
             totalPrice: totalBasketPrice,
         });
     } catch (err) {
+        console.error('Basket error:', err);
         res.status(500).json({ error: 'Xatolik', detail: err.message });
-        console.log(err);
     }
 };
 
