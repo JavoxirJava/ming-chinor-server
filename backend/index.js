@@ -15,8 +15,12 @@ app.use('/uploads', express.static('uploads'));
 // CORS bilan bog‘liq HECH NIMA YO‘Q — Nginx hal qiladi ✅
 
 // MongoDB
-mongoose.set('serverSelectionTimeoutMS', 5000);
-mongoose.connect(process.env.MONGO_URL)
+mongoose.connect(process.env.MONGO_URL, {
+    serverSelectionTimeoutMS: 5000, // mongoga ulanishni 5s da timeout
+    socketTimeoutMS: 10000,         // uzoq querylar uchun soket timeout
+    connectTimeoutMS: 10000,        // TCP connect timeout
+    // authSource, dbName va boshqalar kerak bo'lsa shu yerga
+})
     .then(() => console.log('✅ MongoDB ulandi'))
     .catch(err => console.error('❌ MongoDB xato:', err));
 
