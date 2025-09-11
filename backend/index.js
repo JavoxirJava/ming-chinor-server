@@ -4,28 +4,29 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const { userBot } = require('./bot/bot');
 const createDefaultAdmin = require('./utils/createDefaultAdmin');
-dotenv.config();
 
+dotenv.config();
 const app = express();
+
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
-// app.use(cors());
 
+// CORS sozlamalari
 const whitelist = [
-    'https://ming-chinor-admin.netlify.app/',
-    'https://ming-chinor.netlify.app/',
+    'https://ming-chinor-admin.netlify.app',
+    'https://ming-chinor.netlify.app',
     'http://localhost:3000',
 ];
 
+// OPTIONS preflight tez javob
 app.use((req, res, next) => {
-    // credentials bilan kelsa kechiktirmaslik uchun
     if (req.method === 'OPTIONS') return res.sendStatus(204);
     next();
 });
 
 app.use(cors({
     origin(origin, cb) {
-        if (!origin) return cb(null, true);                 // Postman/curl uchun
+        if (!origin) return cb(null, true); // Postman/curl uchun
         cb(null, whitelist.includes(origin));
     },
     credentials: true,
@@ -35,11 +36,12 @@ app.use(cors({
 }));
 
 app.use((req, res, next) => {
-    res.header('Vary', 'Origin'); // CDN/proxy uchun to‘g‘ri kechlash
+    res.header('Vary', 'Origin'); // CDN/proxy uchun
     next();
 });
 
-app.options('*', cors());
+// Yangi Express 5 uslubi
+app.options('(.*)', cors());
 
 // MongoDB ulash
 mongoose.connect(process.env.MONGO_URL)
@@ -54,14 +56,7 @@ app.get('/', (req, res) => {
 // Botni ishga tushurish
 userBot.launch().then(() => console.log("Telegram bot ishga tushdi ✅"));
 
-// Port
-const PORT = process.env.PORT || 5050;
-app.listen(PORT, () => {
-    console.log(`✅ Server ${PORT}-portda ishlayapti`);
-});
-process.on('unhandledRejection', err => {
-    console.error('❌ Unhandled error:', err);
-});
+// Routes
 const categoryRoutes = require('./routes/categoryRoutes');
 app.use('/api/v1/categories', categoryRoutes);
 
@@ -81,3 +76,13 @@ const adminRoutes = require('./routes/adminRoutes');
 app.use('/api/v1/admin', adminRoutes);
 
 createDefaultAdmin();
+
+// Port
+const PORT = process.env.PORT || 5050;
+app.listen(PORT, () => {
+    console.log(`✅ Server ${PORT}-portda ishlayapti`);
+});
+
+process.on('unhandledRejection', err => {
+    console.error('❌ Unhandled error:', err);
+});
