@@ -42,7 +42,7 @@ exports.addToBasket = async (req, res) => {
 
 exports.getUserBasket = async (req, res) => {
     try {
-        const { userId } = req.params + '';
+        const { userId } = req.params;
 
         // ❗ Guard
         if (!userId || userId === 'null' || userId === 'undefined') {
