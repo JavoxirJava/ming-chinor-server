@@ -71,6 +71,7 @@ exports.getUserBasket = async (req, res) => {
         });
     } catch (err) {
         res.status(500).json({ error: 'Xatolik', detail: err.message });
+        console.log(err);
     }
 };
 
