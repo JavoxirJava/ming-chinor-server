@@ -8,17 +8,17 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+// app.use('/uploads', express.static('uploads'));
 
 // 1) Tez ping — eng tepada
 app.get('/__ping', (req, res) => res.type('text').send('pong'));
 
 // 2) Diagnostika bypass (xohlasa yoqing)
-app.use((req, res, next) => {
-    console.log('REQ:', req.method, req.url);
-    if (process.env.BYPASS === '1') return res.status(200).send('early-ok');
-    next();
-});
+// app.use((req, res, next) => {
+//     console.log('REQ:', req.method, req.url);
+//     if (process.env.BYPASS === '1') return res.status(200).send('early-ok');
+//     next();
+// });
 
 // 3) (Hoziр CORS yo‘q. Nginx qaytaradi.)
 
@@ -37,15 +37,15 @@ app.use((req, res, next) => {
 })();
 
 // 5) Asosiy root
-app.get('/', (req, res) => res.send('🚀 Backend ishlayapti'));
+// app.get('/', (req, res) => res.send('🚀 Backend ishlayapti'));
 
-// 6) Routerlar
-app.use('/api/v1/categories', require('./routes/categoryRoutes'));
-app.use('/api/v1/products', require('./routes/productRoutes'));
-app.use('/api/v1/basket', require('./routes/basketRoutes'));
-app.use('/api/v1/order', require('./routes/orderRoutes'));
-app.use('/api/v1/user', require('./routes/userRoutes'));
-app.use('/api/v1/admin', require('./routes/adminRoutes'));
+// // 6) Routerlar
+// app.use('/api/v1/categories', require('./routes/categoryRoutes'));
+// app.use('/api/v1/products', require('./routes/productRoutes'));
+// app.use('/api/v1/basket', require('./routes/basketRoutes'));
+// app.use('/api/v1/order', require('./routes/orderRoutes'));
+// app.use('/api/v1/user', require('./routes/userRoutes'));
+// app.use('/api/v1/admin', require('./routes/adminRoutes'));
 
 // 7) Botni keyin yoqasiz (hozircha izohda)
 // userBot.launch().then(() => console.log('Telegram bot ishga tushdi ✅'));
