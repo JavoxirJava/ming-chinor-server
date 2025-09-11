@@ -10,10 +10,8 @@ const app = express();
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 // app.use(cors());
-app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true // agar cookie yoki auth token yuborayotgan bo‘lsangiz
-}));
+
+app.use(cors());
 
 // MongoDB ulash
 mongoose.connect(process.env.MONGO_URL)
