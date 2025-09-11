@@ -1,7 +1,8 @@
+// backend/index.js (CORS YO‘Q)
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const cors = require('cors');
+// const cors = require('cors'); // ❌ kerak emas
 const { userBot } = require('./bot/bot');
 const createDefaultAdmin = require('./utils/createDefaultAdmin');
 
@@ -11,77 +12,31 @@ const app = express();
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
-// CORS sozlamalari
-const whitelist = [
-    'https://ming-chinor-admin.netlify.app',
-    'https://ming-chinor.netlify.app',
-    'http://localhost:3000',
-];
+// CORS bilan bog‘liq HECH NIMA YO‘Q — Nginx hal qiladi ✅
 
-// OPTIONS preflight tez javob
-app.use((req, res, next) => {
-    if (req.method === 'OPTIONS') return res.sendStatus(204);
-    next();
-});
-
-app.use(cors({
-    origin(origin, cb) {
-        if (!origin) return cb(null, true); // Postman/curl uchun
-        cb(null, whitelist.includes(origin));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With', 'Accept'],
-    maxAge: 86400,
-}));
-
-app.use((req, res, next) => {
-    res.header('Vary', 'Origin'); // CDN/proxy uchun
-    next();
-});
-
-// Yangi Express 5 uslubi
-app.options('(.*)', cors());
-
-// MongoDB ulash
+// MongoDB
 mongoose.connect(process.env.MONGO_URL)
-    .then(() => console.log("✅ MongoDB ulandi"))
-    .catch(err => console.error("❌ MongoDB xato:", err));
+    .then(() => console.log('✅ MongoDB ulandi'))
+    .catch(err => console.error('❌ MongoDB xato:', err));
 
-// Test route
-app.get('/', (req, res) => {
-    res.send("🚀 Bot backend ishlayapti");
-});
-
-// Botni ishga tushurish
-userBot.launch().then(() => console.log("Telegram bot ishga tushdi ✅"));
+// Health
+app.get('/', (_, res) => res.send('🚀 Bot backend ishlayapti'));
 
 // Routes
-const categoryRoutes = require('./routes/categoryRoutes');
-app.use('/api/v1/categories', categoryRoutes);
-
-const productRoutes = require('./routes/productRoutes');
-app.use('/api/v1/products', productRoutes);
-
-const basketRoutes = require('./routes/basketRoutes');
-app.use('/api/v1/basket', basketRoutes);
-
-const orderRoutes = require('./routes/orderRoutes');
-app.use('/api/v1/order', orderRoutes);
-
-const userRoutes = require('./routes/userRoutes');
-app.use('/api/v1/user', userRoutes);
-
-const adminRoutes = require('./routes/adminRoutes');
-app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/categories', require('./routes/categoryRoutes'));
+app.use('/api/v1/products', require('./routes/productRoutes'));
+app.use('/api/v1/basket', require('./routes/basketRoutes'));
+app.use('/api/v1/order', require('./routes/orderRoutes'));
+app.use('/api/v1/user', require('./routes/userRoutes'));
+app.use('/api/v1/admin', require('./routes/adminRoutes'));
 
 createDefaultAdmin();
 
-// Port
+// Bot
+userBot.launch().then(() => console.log('Telegram bot ishga tushdi ✅'));
+
 const PORT = process.env.PORT || 5050;
-app.listen(PORT, () => {
-    console.log(`✅ Server ${PORT}-portda ishlayapti`);
-});
+app.listen(PORT, () => console.log(`✅ Server ${PORT}-portda ishlayapti`));
 
 process.on('unhandledRejection', err => {
     console.error('❌ Unhandled error:', err);
