@@ -14,10 +14,9 @@ userBot.start(async ctx => {
 
     const existingUser = await User.findOne({ chatId });
     if (existingUser)
-        return ctx.reply(`✅ Siz allaqachon ro‘yxatdan o‘tgansiz! : ${BASE_URL}?userId=${existingUser._id}`,
-            Markup.inlineKeyboard([
-                [Markup.button.webApp("🛍 Mini ilova", `${BASE_URL}?userId=${existingUser._id}`)]
-            ]));
+        return ctx.reply(`✅ Siz allaqachon ro‘yxatdan o‘tgansiz!`, Markup.inlineKeyboard([
+            [Markup.button.webApp("🛍 Mini ilova", `${BASE_URL}?userId=${existingUser._id}`)]
+        ]));
 
     tempUsers.set(chatId, { step: 'name' });
     return ctx.reply("Ismingizni kiriting:");
